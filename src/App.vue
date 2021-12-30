@@ -4,15 +4,17 @@
     <!-- <p>{{ name }} - {{ age }}</p>
     <button @click="changeAge(30)">changeAge</button>
     <button @click="changeName('Javaid')">changeName</button> -->
+    <jobs :jobs="jobs"></jobs>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, ref, toRefs } from "vue";
+import Jobs from "./components/Jobs.vue";
 import Job from "./types/Job";
 export default defineComponent({
   name: "App",
-  components: {},
+  components: { Jobs },
 
   setup() {
     const jobs = ref<Job[]>([
