@@ -1,6 +1,9 @@
 <template>
   <div class="job-list">
     <ul>
+      {{
+        order
+      }}
       <li v-for="job in jobs" :key="job.id">
         <h2>{{ job.title }} in {{ job.location }}</h2>
         <div class="salary">
@@ -22,10 +25,16 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import Job from "@/types/Job";
+import OrderTerm from "@/types/OrderTerm";
+
 export default defineComponent({
   props: {
     jobs: {
       type: Array as PropType<Job[]>,
+      required: true,
+    },
+    order: {
+      type: String as PropType<OrderTerm>,
       required: true,
     },
   },
