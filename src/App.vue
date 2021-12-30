@@ -1,136 +1,97 @@
 <template>
   <div class="app">
-    <!-- ============ Basics ============== -->
-    <!-- <p>{{ name }} - {{ age }}</p>
-    <button @click="changeAge(30)">changeAge</button>
-    <button @click="changeName('Javaid')">changeName</button> -->
-    <header>
-      <div class="order">
-        <button @click="handleClick('title')">Order by title</button>
-        <button @click="handleClick('salary')">Order by salary</button>
-        <button @click="handleClick('location')">Order by location</button>
-      </div>
-    </header>
-    <jobs :jobs="jobs" :order="order"></jobs>
+    <h1>Shopping Cart</h1>
+    <div class="products">
+      <h2>Product</h2>
+      <product-list
+        :products="products"
+        @addProductToCart="addProductToCart"
+      ></product-list>
+    </div>
+    <div class="cart">
+      <h2>Cart</h2>
+      <cart :products="cartItems" :total="total"></cart>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, toRefs } from "vue";
-import Jobs from "./components/Jobs.vue";
-import Job from "./types/Job";
-import OrderTerm from "./types/OrderTerm";
+import { computed, defineComponent, ref } from "vue";
+import Cart from "./components/Cart.vue";
+import ProductList from "./components/ProductList.vue";
+import Product from "./types/Product";
+import CartO from "./types/CartO";
 
 export default defineComponent({
   name: "App",
-  components: { Jobs },
-
+  components: { ProductList, Cart },
   setup() {
-    const jobs = ref<Job[]>([
-      {
-        title: "farm worker",
-        location: "lon lon ranch",
-        salary: 30000,
-        id: "1",
-      },
-      {
-        title: "quarryman",
-        location: "death mountain",
-        salary: 40000,
-        id: "2",
-      },
-      {
-        title: "flute player",
-        location: "the lost woods",
-        salary: 35000,
-        id: "3",
-      },
-      { title: "fisherman", location: "lake hylia", salary: 21000, id: "4" },
-      {
-        title: "prison guard",
-        location: "gerudo valley",
-        salary: 32000,
-        id: "5",
-      },
+    const products = ref<Product[]>([
+      { id: 1, title: "iPad 4 Mini", price: 500.01, inventory: 2 },
+      { id: 2, title: "H&M T-Shirt White", price: 10.99, inventory: 10 },
+      { id: 3, title: "Charli XCX - Sucker CD", price: 19.99, inventory: 5 },
     ]);
-
-    const order = ref<OrderTerm>("title");
-    const handleClick = (term: OrderTerm) => {
-      order.value = term;
-    };
+    const cartItems = ref<CartO[]>([]);
+    const total = computed(() => {
+      if (cartItems.value.length > 0) {
+        return cartItems.value.reduce(
+          (total: number, product: CartO): number => {
+            return total + product.price * product.quantity;
+          },
+          0
+        );
+      } else {
+        return 0;
+      }
+    });
     return {
-      jobs,
-      order,
-      handleClick,
+      products,
+      cartItems,
+      total,
     };
   },
-
-  // Basics Container (Use Typescript and Composition API)
-  //   {
-  // // Vue-3 but with Reactive
-  //   // setup() {
-  //     // +++++++++++++++++++++++++++++++++++++++ Basics ++++++++++++++++++++++
-  //     // ============== Vue-3 but with Reactive ==============
-  //     // const state = reactive({
-  //     //   name: "Hafiz" as string,
-  //     //   age: 25 as number | string,
-  //     // });
-
-  //     // // To update within the state
-  //     // state.name = "Javaid";
-
-  //     // return {
-  //     //   ...toRefs(state),
-  //     // };
-  //     // ============== Vue-3 but with Ref ==============
-  //     // const name = ref("Hafiz");
-  //     // const age = ref<string | number>("Hafiz");
-  //     // // For updating Purpose
-  //     // name.value = "Javaid";
-  //     // return {
-  //     //   name,
-  //     //   age,
-  //     // };
-  //   // },
-
-  //   // Vue2 things
-  //   // data() {
-  //   //   return {
-  //   //     name: "Hafiz" as string,
-  //   //     age: 25 as number | string,
-  //   //   };
-  //   // },
-
-  //   // It will work fine with reactive
-  //   // methods: {
-  //   //   changeAge(age: number | string) {
-  //   //     this.age = age;
-  //   //   },
-  //   //   changeName(name: string) {
-  //   //     this.name = name;
-  //   //   },
-  //   // },
-
-  //   // +++++++++++++++++++++++++++++++++++++++ Basics ++++++++++++++++++++++
-  //   }
+  methods: {
+    addProductToCart(product: Product) {
+      console.log(JSON.stringify(product));
+      // product = JSON.parse(product)
+      if (product.inventory > 0) {
+        const cartItem = this.cartItems.find((item) => item.id === product.id);
+        if (!cartItem) {
+          this.pushProductToCart(product);
+        } else {
+          this.incrementItemQuantity(product);
+        }
+        this.updateInventory(product);
+      }
+    },
+    pushProductToCart(product: Product) {
+      this.cartItems.push({
+        ...product,
+        quantity: 1,
+      });
+    },
+    incrementItemQuantity(product: Product) {
+      this.cartItems = [...this.cartItems].map((item) => {
+        if (item.id === product.id) {
+          item.quantity++;
+        }
+        return item;
+      });
+    },
+    updateInventory(product: Product) {
+      this.products = [...this.products].map((item) => {
+        if (item.id === product.id) {
+          if (item.inventory > 0) {
+            item.inventory--;
+          } else {
+            item.inventory = 0;
+          }
+        }
+        return item;
+      });
+    },
+  },
 });
 </script>
 
-<style>
-header {
-  text-align: center;
-}
-header .order {
-  margin-top: 20px;
-}
-button {
-  margin: 0 10px;
-  color: #1195c9;
-  border: 3px solid #1195c9;
-  background: #d5f0ff;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-</style>
+<style></style>
